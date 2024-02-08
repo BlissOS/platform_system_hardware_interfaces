@@ -36,6 +36,7 @@
 #include <string>
 #include <thread>
 using namespace std::chrono_literals;
+#include <cstdlib>
 
 using ::aidl::android::system::suspend::ISystemSuspend;
 using ::aidl::android::system::suspend::IWakeLock;
@@ -406,6 +407,8 @@ bool SystemSuspend::forceSuspend() {
     //  or reset mSuspendCounter, it just ignores them.  When the system
     //  returns from suspend, the wakelocks and SuspendCounter will not have
     //  changed.
+    std::system("/system/bin/sh /system/etc/pre_sleep.sh");
+    std::system("/system/bin/sh /vendor/etc/pre_sleep.sh");
     auto autosuspendLock = std::unique_lock(mAutosuspendLock);
     bool success = WriteStringToFd(getSleepState(), mStateFd);
     autosuspendLock.unlock();
@@ -414,6 +417,8 @@ bool SystemSuspend::forceSuspend() {
         PLOG(VERBOSE) << "error writing to /sys/power/state for forceSuspend";
     }
     mPwrbtnd->sendKeyWakeup();
+    std::system("/system/bin/sh /system/etc/post_sleep.sh");
+    std::system("/system/bin/sh /vendor/etc/post_sleep.sh");
 
     return success;
 }
