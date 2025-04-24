@@ -43,6 +43,7 @@ using ::aidl::android::system::suspend::WakeLockType;
 using ::android::base::Error;
 using ::android::base::GetBoolProperty;
 using ::android::base::GetProperty;
+using ::android::base::SetProperty;
 using ::android::base::ReadFdToString;
 using ::android::base::WriteStringToFd;
 using ::android::base::StringPrintf;
@@ -414,6 +415,9 @@ bool SystemSuspend::forceSuspend() {
         PLOG(VERBOSE) << "error writing to /sys/power/state for forceSuspend";
     }
     mPwrbtnd->sendKeyWakeup();
+
+    // Set a property to indicate that the device is awake
+    SetProperty("suspend.device_is_awake", "1");
 
     return success;
 }
